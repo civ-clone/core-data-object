@@ -9,7 +9,9 @@ export interface IDataObject {
 }
 export declare class DataObject implements IDataObject {
   #private;
+  constructor();
   addKey(...keys: (keyof this)[]): void;
+  id(): string;
   keys(): (keyof this)[];
   toPlainObject(additionalDataRegistry?: AdditionalDataRegistry): PlainObject;
 }

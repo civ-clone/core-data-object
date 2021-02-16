@@ -5,6 +5,7 @@ import {
 import AdditionalData from './AdditionalData';
 import EntityRegistry from '@civ-clone/core-registry/EntityRegistry';
 import { IConstructor } from '@civ-clone/core-registry/Registry';
+import { ulid } from 'ulid';
 
 export type PlainObject = { [key: string]: any };
 
@@ -15,7 +16,8 @@ export interface IDataObject {
 }
 
 export class DataObject implements IDataObject {
-  #keys: (keyof this)[] = [];
+  #id: string;
+  #keys: (keyof this)[] = ['id'];
   #toPlainObject = (
     value: any,
     additionalDataRegistry: AdditionalDataRegistry = additionalDataRegistryInstance
@@ -55,8 +57,16 @@ export class DataObject implements IDataObject {
     );
   };
 
+  constructor() {
+    this.#id = ulid();
+  }
+
   addKey(...keys: (keyof this)[]): void {
     this.#keys.push(...keys);
+  }
+
+  id(): string {
+    return this.#id;
   }
 
   keys(): (keyof this)[] {
