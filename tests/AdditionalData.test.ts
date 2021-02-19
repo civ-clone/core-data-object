@@ -33,6 +33,12 @@ class C extends DataObject {
   }
 }
 
+class D extends C {
+  constructor() {
+    super();
+  }
+}
+
 describe('AdditionalData', (): void => {
   it('should allow DataObjects to be augmented', (): void => {
     const additionalDataRegistry = new AdditionalDataRegistry(),
@@ -71,5 +77,19 @@ describe('AdditionalData', (): void => {
     expect(plainA.b.b).to.a('object').keys('_', 'id', 'a');
     expect(plainA.b.b._).to.equal('C');
     expect(plainA.b.b.a).to.equal('static a');
+  });
+
+  it('should allow add `AdditionalData` for child classes too', (): void => {
+    const additionalDataRegistry = new AdditionalDataRegistry(),
+      additionalDataC = new AdditionalData(C, 'a', () => 'a'),
+      d = new D();
+
+    additionalDataRegistry.register(additionalDataC);
+
+    const plainD = d.toPlainObject(additionalDataRegistry);
+
+    expect(plainD).to.a('object').keys('_', 'id', 'a');
+    expect(plainD._).to.equal('D');
+    expect(plainD.a).to.equal('a');
   });
 });

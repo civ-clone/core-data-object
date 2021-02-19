@@ -8,7 +8,9 @@ class AdditionalDataRegistry extends EntityRegistry_1.EntityRegistry {
         super(AdditionalData_1.default);
     }
     getByType(type) {
-        return this.filter((additionalData) => additionalData.type() === type);
+        return this.filter((additionalData) => additionalData.type() === type ||
+            Object.prototype.isPrototypeOf.call(additionalData.type(), type) ||
+            Object.prototype.isPrototypeOf.call(additionalData.type().prototype, type));
     }
 }
 exports.AdditionalDataRegistry = AdditionalDataRegistry;

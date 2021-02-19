@@ -20,7 +20,12 @@ export class AdditionalDataRegistry
   getByType(type: IConstructor): AdditionalData[] {
     return this.filter(
       (additionalData: AdditionalData): boolean =>
-        additionalData.type() === type
+        additionalData.type() === type ||
+        Object.prototype.isPrototypeOf.call(additionalData.type(), type) ||
+        Object.prototype.isPrototypeOf.call(
+          additionalData.type().prototype,
+          type
+        )
     );
   }
 }
