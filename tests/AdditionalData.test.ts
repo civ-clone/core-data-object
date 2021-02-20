@@ -2,6 +2,7 @@ import AdditionalData from '../AdditionalData';
 import AdditionalDataRegistry from '../AdditionalDataRegistry';
 import DataObject from '../DataObject';
 import { expect } from 'chai';
+import reconstituteData from './lib/reconstituteData';
 
 class A extends DataObject {
   constructor() {
@@ -47,7 +48,7 @@ describe('AdditionalData', (): void => {
 
     additionalDataRegistry.register(additionalData);
 
-    const plainA = a.toPlainObject(additionalDataRegistry);
+    const plainA = reconstituteData(a.toPlainObject(additionalDataRegistry));
 
     expect(plainA).to.a('object').keys('_', 'id', 'a', 'b');
     expect(plainA.b).to.a('object').keys('_', 'id', 'a');
@@ -68,7 +69,7 @@ describe('AdditionalData', (): void => {
       additionalDataC
     );
 
-    const plainA = a.toPlainObject(additionalDataRegistry);
+    const plainA = reconstituteData(a.toPlainObject(additionalDataRegistry));
 
     expect(plainA).to.a('object').keys('_', 'id', 'a', 'b');
     expect(plainA.b).to.a('object').keys('_', 'id', 'a', 'b');
@@ -86,7 +87,7 @@ describe('AdditionalData', (): void => {
 
     additionalDataRegistry.register(additionalDataC);
 
-    const plainD = d.toPlainObject(additionalDataRegistry);
+    const plainD = reconstituteData(d.toPlainObject(additionalDataRegistry));
 
     expect(plainD).to.a('object').keys('_', 'id', 'a');
     expect(plainD._).to.equal('D');

@@ -7,7 +7,18 @@ import EntityRegistry from '@civ-clone/core-registry/EntityRegistry';
 import { IConstructor } from '@civ-clone/core-registry/Registry';
 import { ulid } from 'ulid';
 
-export type PlainObject = { [key: string]: any };
+export type PlainObject = {
+  [key: string]: any;
+};
+
+export type ObjectStore = {
+  [key: string]: PlainObject;
+};
+
+export type ObjectMap = {
+  hierarchy: PlainObject;
+  objects: ObjectStore;
+};
 
 export interface IDataObject {
   addKey(...keys: (keyof this)[]): void;
@@ -20,8 +31,9 @@ export class DataObject implements IDataObject {
   #keys: (keyof this)[] = ['id'];
   #toPlainObject = (
     value: any,
+    objects: ObjectStore,
     additionalDataRegistry: AdditionalDataRegistry = additionalDataRegistryInstance
-  ): PlainObject | any[] => {
+  ): PlainObject | PlainObject[] => {
     if (value instanceof EntityRegistry) {
       value = value.entries();
     }
@@ -29,12 +41,47 @@ export class DataObject implements IDataObject {
     if (Array.isArray(value)) {
       return value.map(
         (item: any): PlainObject =>
-          this.#toPlainObject(item, additionalDataRegistry)
+          this.#toPlainObject(item, objects, additionalDataRegistry)
       );
     }
 
     if (value instanceof DataObject) {
-      return value.toPlainObject(additionalDataRegistry);
+      const id = value.id();
+
+      if (!(id in objects)) {
+        const plainObject: PlainObject = {
+          _: value.constructor.name,
+        };
+
+        objects[id] = plainObject;
+
+        value.keys().forEach((key): void => {
+          let keyValue: any =
+            value[key] instanceof Function
+              ? ((value[key] as unknown) as Function)()
+              : value[key];
+
+          plainObject[key] = this.#toPlainObject(
+            keyValue,
+            objects,
+            additionalDataRegistry
+          );
+        });
+
+        additionalDataRegistry
+          .getByType(<IConstructor>value.constructor)
+          .forEach((additionalData: AdditionalData): void => {
+            plainObject[additionalData.key()] = this.#toPlainObject(
+              additionalData.data(value),
+              objects,
+              additionalDataRegistry
+            );
+          });
+      }
+
+      return {
+        '#ref': id,
+      };
     }
 
     if (value instanceof Function) {
@@ -43,18 +90,22 @@ export class DataObject implements IDataObject {
       };
     }
 
-    if (typeof value !== 'object' || value === null) {
-      return value;
+    if (value && value instanceof Object) {
+      return Object.entries(value).reduce(
+        (object: PlainObject, [key, value]) => {
+          object[key] = this.#toPlainObject(
+            value,
+            objects,
+            additionalDataRegistry
+          );
+
+          return object;
+        },
+        {}
+      );
     }
 
-    return Object.entries(value).reduce(
-      (object: any, [key, value]: [string, any]): any => {
-        object[key] = this.#toPlainObject(value, additionalDataRegistry);
-
-        return object;
-      },
-      {}
-    );
+    return value;
   };
 
   constructor() {
@@ -75,37 +126,13 @@ export class DataObject implements IDataObject {
 
   toPlainObject(
     additionalDataRegistry: AdditionalDataRegistry = additionalDataRegistryInstance
-  ): PlainObject {
-    const object = this.keys().reduce(
-      (object: PlainObject, key: keyof this): PlainObject => {
-        const value: any =
-          this[key] instanceof Function
-            ? ((this[key] as unknown) as Function)()
-            : this[key];
+  ): ObjectMap {
+    const objects = {};
 
-        object[key as string] = this.#toPlainObject(
-          value,
-          additionalDataRegistry
-        );
-
-        return object;
-      },
-      {
-        _: this.constructor.name,
-      }
-    );
-
-    additionalDataRegistry
-      .getByType(<IConstructor>this.constructor)
-      .forEach(
-        (additionalData: AdditionalData) =>
-          ((object as PlainObject)[additionalData.key()] = this.#toPlainObject(
-            additionalData.data(this),
-            additionalDataRegistry
-          ))
-      );
-
-    return object;
+    return {
+      hierarchy: this.#toPlainObject(this, objects, additionalDataRegistry),
+      objects,
+    };
   }
 }
 

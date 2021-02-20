@@ -12,7 +12,7 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
     }
     return privateMap.get(receiver);
 };
-var _id, _keys, _toPlainObject;
+var _id, _keys, _getId, _toPlainObject;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DataObject = void 0;
 const AdditionalDataRegistry_1 = require("./AdditionalDataRegistry");
@@ -22,28 +22,57 @@ class DataObject {
     constructor() {
         _id.set(this, void 0);
         _keys.set(this, ['id']);
-        _toPlainObject.set(this, (value, additionalDataRegistry = AdditionalDataRegistry_1.instance) => {
+        _getId.set(this, (value) => {
+            if (value instanceof DataObject) {
+                return value.id();
+            }
+            if (value instanceof Function) {
+                return value.name;
+            }
+            return ulid_1.ulid();
+        });
+        _toPlainObject.set(this, (value, objects, additionalDataRegistry = AdditionalDataRegistry_1.instance) => {
             if (value instanceof EntityRegistry_1.default) {
                 value = value.entries();
             }
             if (Array.isArray(value)) {
-                return value.map((item) => __classPrivateFieldGet(this, _toPlainObject).call(this, item, additionalDataRegistry));
+                return value.map((item) => __classPrivateFieldGet(this, _toPlainObject).call(this, item, objects, additionalDataRegistry));
             }
             if (value instanceof DataObject) {
-                return value.toPlainObject(additionalDataRegistry);
+                const id = __classPrivateFieldGet(this, _getId).call(this, value);
+                if (!(id in objects)) {
+                    const plainObject = {
+                        _: value.constructor.name,
+                    };
+                    objects[id] = plainObject;
+                    value.keys().forEach((key) => {
+                        let keyValue = value[key] instanceof Function
+                            ? value[key]()
+                            : value[key];
+                        plainObject[key] = __classPrivateFieldGet(this, _toPlainObject).call(this, keyValue, objects, additionalDataRegistry);
+                    });
+                    additionalDataRegistry
+                        .getByType(value.constructor)
+                        .forEach((additionalData) => {
+                        plainObject[additionalData.key()] = __classPrivateFieldGet(this, _toPlainObject).call(this, additionalData.data(value), objects, additionalDataRegistry);
+                    });
+                }
+                return {
+                    '#ref': id,
+                };
             }
             if (value instanceof Function) {
                 return {
                     _: value.name,
                 };
             }
-            if (typeof value !== 'object' || value === null) {
-                return value;
+            if (value && value instanceof Object) {
+                return Object.entries(value).reduce((object, [key, value]) => {
+                    object[key] = __classPrivateFieldGet(this, _toPlainObject).call(this, value, objects, additionalDataRegistry);
+                    return object;
+                }, {});
             }
-            return Object.entries(value).reduce((object, [key, value]) => {
-                object[key] = __classPrivateFieldGet(this, _toPlainObject).call(this, value, additionalDataRegistry);
-                return object;
-            }, {});
+            return value;
         });
         __classPrivateFieldSet(this, _id, ulid_1.ulid());
     }
@@ -57,22 +86,14 @@ class DataObject {
         return __classPrivateFieldGet(this, _keys);
     }
     toPlainObject(additionalDataRegistry = AdditionalDataRegistry_1.instance) {
-        const object = this.keys().reduce((object, key) => {
-            const value = this[key] instanceof Function
-                ? this[key]()
-                : this[key];
-            object[key] = __classPrivateFieldGet(this, _toPlainObject).call(this, value, additionalDataRegistry);
-            return object;
-        }, {
-            _: this.constructor.name,
-        });
-        additionalDataRegistry
-            .getByType(this.constructor)
-            .forEach((additionalData) => (object[additionalData.key()] = __classPrivateFieldGet(this, _toPlainObject).call(this, additionalData.data(this), additionalDataRegistry)));
-        return object;
+        const objects = {};
+        return {
+            hierarchy: __classPrivateFieldGet(this, _toPlainObject).call(this, this, objects, additionalDataRegistry),
+            objects,
+        };
     }
 }
 exports.DataObject = DataObject;
-_id = new WeakMap(), _keys = new WeakMap(), _toPlainObject = new WeakMap();
+_id = new WeakMap(), _keys = new WeakMap(), _getId = new WeakMap(), _toPlainObject = new WeakMap();
 exports.default = DataObject;
 //# sourceMappingURL=DataObject.js.map
