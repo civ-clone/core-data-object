@@ -1,6 +1,6 @@
-import { ObjectMap, PlainObject } from '../../DataObject';
+import { ObjectMap, PlainObject } from '../DataObject';
 
-export const reconstituteData = ({
+export const reconstituteData: (objectMap: ObjectMap) => PlainObject = ({
   hierarchy,
   objects,
 }: ObjectMap): PlainObject => {

@@ -12,7 +12,7 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
     }
     return privateMap.get(receiver);
 };
-var _id, _keys, _getId, _toPlainObject;
+var _id, _keys, _toPlainObject;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DataObject = void 0;
 const AdditionalDataRegistry_1 = require("./AdditionalDataRegistry");
@@ -22,15 +22,6 @@ class DataObject {
     constructor() {
         _id.set(this, void 0);
         _keys.set(this, ['id']);
-        _getId.set(this, (value) => {
-            if (value instanceof DataObject) {
-                return value.id();
-            }
-            if (value instanceof Function) {
-                return value.name;
-            }
-            return ulid_1.ulid();
-        });
         _toPlainObject.set(this, (value, objects, additionalDataRegistry = AdditionalDataRegistry_1.instance) => {
             if (value instanceof EntityRegistry_1.default) {
                 value = value.entries();
@@ -39,7 +30,7 @@ class DataObject {
                 return value.map((item) => __classPrivateFieldGet(this, _toPlainObject).call(this, item, objects, additionalDataRegistry));
             }
             if (value instanceof DataObject) {
-                const id = __classPrivateFieldGet(this, _getId).call(this, value);
+                const id = value.id();
                 if (!(id in objects)) {
                     const plainObject = {
                         _: value.constructor.name,
@@ -94,6 +85,6 @@ class DataObject {
     }
 }
 exports.DataObject = DataObject;
-_id = new WeakMap(), _keys = new WeakMap(), _getId = new WeakMap(), _toPlainObject = new WeakMap();
+_id = new WeakMap(), _keys = new WeakMap(), _toPlainObject = new WeakMap();
 exports.default = DataObject;
 //# sourceMappingURL=DataObject.js.map

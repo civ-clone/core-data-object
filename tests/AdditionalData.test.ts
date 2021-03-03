@@ -2,7 +2,7 @@ import AdditionalData from '../AdditionalData';
 import AdditionalDataRegistry from '../AdditionalDataRegistry';
 import DataObject from '../DataObject';
 import { expect } from 'chai';
-import reconstituteData from './lib/reconstituteData';
+import reconstituteData from '../lib/reconstituteData';
 
 class A extends DataObject {
   constructor() {

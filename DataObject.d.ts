@@ -2,12 +2,12 @@ import { AdditionalDataRegistry } from './AdditionalDataRegistry';
 export declare type PlainObject = {
   [key: string]: any;
 };
-export declare type IObjectStore = {
+export declare type ObjectStore = {
   [key: string]: PlainObject;
 };
-export declare type IObjectMap = {
+export declare type ObjectMap = {
   hierarchy: PlainObject;
-  objects: IObjectStore;
+  objects: ObjectStore;
 };
 export interface IDataObject {
   addKey(...keys: (keyof this)[]): void;
@@ -20,6 +20,6 @@ export declare class DataObject implements IDataObject {
   addKey(...keys: (keyof this)[]): void;
   id(): string;
   keys(): (keyof this)[];
-  toPlainObject(additionalDataRegistry?: AdditionalDataRegistry): IObjectMap;
+  toPlainObject(additionalDataRegistry?: AdditionalDataRegistry): ObjectMap;
 }
 export default DataObject;

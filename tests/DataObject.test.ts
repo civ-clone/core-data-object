@@ -1,9 +1,9 @@
+import AdditionalData from '../AdditionalData';
+import AdditionalDataRegistry from '../AdditionalDataRegistry';
 import DataObject from '../DataObject';
 import EntityRegistry from '@civ-clone/core-registry/EntityRegistry';
 import { expect } from 'chai';
-import AdditionalDataRegistry from '../AdditionalDataRegistry';
-import AdditionalData from '../AdditionalData';
-import reconstituteData from './lib/reconstituteData';
+import reconstituteData from '../lib/reconstituteData';
 
 class A extends DataObject {
   a: string = 'a';
