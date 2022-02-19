@@ -5,7 +5,6 @@ import {
 import AdditionalData from './AdditionalData';
 import EntityRegistry from '@civ-clone/core-registry/EntityRegistry';
 import { IConstructor } from '@civ-clone/core-registry/Registry';
-import { ulid } from 'ulid';
 
 export type PlainObject = {
   [key: string]: any;
@@ -25,6 +24,22 @@ export interface IDataObject {
   keys(): (keyof this)[];
   toPlainObject(): PlainObject;
 }
+
+const idCache: { [key: string]: number | bigint } = {},
+  idProvider = (object: DataObject) => {
+    const className = object.constructor.name,
+      current = idCache[className];
+
+    if (!current) {
+      idCache[className] = 0;
+    }
+
+    if (current === Number.MAX_SAFE_INTEGER) {
+      idCache[className] = BigInt(current);
+    }
+
+    return className + '-' + (++idCache[className]).toString(36);
+  };
 
 export class DataObject implements IDataObject {
   #id: string;
@@ -58,7 +73,7 @@ export class DataObject implements IDataObject {
         value.keys().forEach((key): void => {
           let keyValue: any =
             value[key] instanceof Function
-              ? ((value[key] as unknown) as Function)()
+              ? (value[key] as unknown as Function)()
               : value[key];
 
           plainObject[key] = this.#toPlainObject(
@@ -109,7 +124,7 @@ export class DataObject implements IDataObject {
   };
 
   constructor() {
-    this.#id = ulid();
+    this.#id = idProvider(this);
   }
 
   addKey(...keys: (keyof this)[]): void {

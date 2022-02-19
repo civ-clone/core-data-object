@@ -12,7 +12,8 @@ export interface IAdditionalDataRegistry
 
 export class AdditionalDataRegistry
   extends EntityRegistry<AdditionalData>
-  implements IAdditionalDataRegistry {
+  implements IAdditionalDataRegistry
+{
   constructor() {
     super(AdditionalData);
   }

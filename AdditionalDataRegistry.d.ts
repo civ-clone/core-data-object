@@ -10,7 +10,8 @@ export interface IAdditionalDataRegistry
 }
 export declare class AdditionalDataRegistry
   extends EntityRegistry<AdditionalData>
-  implements IAdditionalDataRegistry {
+  implements IAdditionalDataRegistry
+{
   constructor();
   getByType(type: IConstructor): AdditionalData[];
 }
