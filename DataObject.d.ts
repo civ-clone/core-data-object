@@ -1,4 +1,5 @@
 import { AdditionalDataRegistry } from './AdditionalDataRegistry';
+export declare type DataObjectFilter = (object: DataObject) => any;
 export declare type PlainObject = {
   [key: string]: any;
 };
@@ -20,6 +21,9 @@ export declare class DataObject implements IDataObject {
   addKey(...keys: (keyof this)[]): void;
   id(): string;
   keys(): (keyof this)[];
-  toPlainObject(additionalDataRegistry?: AdditionalDataRegistry): ObjectMap;
+  toPlainObject(
+    dataObjectFilter?: DataObjectFilter,
+    additionalDataRegistry?: AdditionalDataRegistry
+  ): ObjectMap;
 }
 export default DataObject;

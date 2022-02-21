@@ -10,7 +10,7 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 };
-var _DataObject_id, _DataObject_keys, _DataObject_toPlainObject;
+var _DataObject_id, _DataObject_keys;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DataObject = void 0;
 const AdditionalDataRegistry_1 = require("./AdditionalDataRegistry");
@@ -24,54 +24,54 @@ const idCache = {}, idProvider = (object) => {
         idCache[className] = BigInt(current);
     }
     return className + '-' + (++idCache[className]).toString(36);
+}, toPlainObject = (value, objects, filter = (object) => object, additionalDataRegistry = AdditionalDataRegistry_1.instance) => {
+    if (value instanceof EntityRegistry_1.default) {
+        value = value.entries();
+    }
+    if (Array.isArray(value)) {
+        return value.map((item) => toPlainObject(item, objects, filter, additionalDataRegistry));
+    }
+    if (value instanceof DataObject) {
+        const id = value.id();
+        value = filter(value);
+        if (!(id in objects)) {
+            const plainObject = {
+                _: value.constructor.name,
+            };
+            objects[id] = plainObject;
+            value.keys().forEach((key) => {
+                const keyValue = value[key] instanceof Function
+                    ? value[key]()
+                    : value[key];
+                plainObject[key] = toPlainObject(keyValue, objects, filter, additionalDataRegistry);
+            });
+            additionalDataRegistry
+                .getByType(value.constructor)
+                .forEach((additionalData) => {
+                plainObject[additionalData.key()] = toPlainObject(additionalData.data(value), objects, filter, additionalDataRegistry);
+            });
+        }
+        return {
+            '#ref': id,
+        };
+    }
+    if (value instanceof Function) {
+        return {
+            _: value.name,
+        };
+    }
+    if (value && value instanceof Object) {
+        return Object.entries(value).reduce((object, [key, value]) => {
+            object[key] = toPlainObject(value, objects, filter, additionalDataRegistry);
+            return object;
+        }, {});
+    }
+    return value;
 };
 class DataObject {
     constructor() {
         _DataObject_id.set(this, void 0);
         _DataObject_keys.set(this, ['id']);
-        _DataObject_toPlainObject.set(this, (value, objects, additionalDataRegistry = AdditionalDataRegistry_1.instance) => {
-            if (value instanceof EntityRegistry_1.default) {
-                value = value.entries();
-            }
-            if (Array.isArray(value)) {
-                return value.map((item) => __classPrivateFieldGet(this, _DataObject_toPlainObject, "f").call(this, item, objects, additionalDataRegistry));
-            }
-            if (value instanceof DataObject) {
-                const id = value.id();
-                if (!(id in objects)) {
-                    const plainObject = {
-                        _: value.constructor.name,
-                    };
-                    objects[id] = plainObject;
-                    value.keys().forEach((key) => {
-                        let keyValue = value[key] instanceof Function
-                            ? value[key]()
-                            : value[key];
-                        plainObject[key] = __classPrivateFieldGet(this, _DataObject_toPlainObject, "f").call(this, keyValue, objects, additionalDataRegistry);
-                    });
-                    additionalDataRegistry
-                        .getByType(value.constructor)
-                        .forEach((additionalData) => {
-                        plainObject[additionalData.key()] = __classPrivateFieldGet(this, _DataObject_toPlainObject, "f").call(this, additionalData.data(value), objects, additionalDataRegistry);
-                    });
-                }
-                return {
-                    '#ref': id,
-                };
-            }
-            if (value instanceof Function) {
-                return {
-                    _: value.name,
-                };
-            }
-            if (value && value instanceof Object) {
-                return Object.entries(value).reduce((object, [key, value]) => {
-                    object[key] = __classPrivateFieldGet(this, _DataObject_toPlainObject, "f").call(this, value, objects, additionalDataRegistry);
-                    return object;
-                }, {});
-            }
-            return value;
-        });
         __classPrivateFieldSet(this, _DataObject_id, idProvider(this), "f");
     }
     addKey(...keys) {
@@ -83,15 +83,15 @@ class DataObject {
     keys() {
         return __classPrivateFieldGet(this, _DataObject_keys, "f");
     }
-    toPlainObject(additionalDataRegistry = AdditionalDataRegistry_1.instance) {
+    toPlainObject(dataObjectFilter = (object) => object, additionalDataRegistry = AdditionalDataRegistry_1.instance) {
         const objects = {};
         return {
-            hierarchy: __classPrivateFieldGet(this, _DataObject_toPlainObject, "f").call(this, this, objects, additionalDataRegistry),
+            hierarchy: toPlainObject(this, objects, dataObjectFilter, additionalDataRegistry),
             objects,
         };
     }
 }
 exports.DataObject = DataObject;
-_DataObject_id = new WeakMap(), _DataObject_keys = new WeakMap(), _DataObject_toPlainObject = new WeakMap();
+_DataObject_id = new WeakMap(), _DataObject_keys = new WeakMap();
 exports.default = DataObject;
 //# sourceMappingURL=DataObject.js.map

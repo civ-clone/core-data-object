@@ -48,7 +48,9 @@ describe('AdditionalData', (): void => {
 
     additionalDataRegistry.register(additionalData);
 
-    const plainA = reconstituteData(a.toPlainObject(additionalDataRegistry));
+    const plainA = reconstituteData(
+      a.toPlainObject((object) => object, additionalDataRegistry)
+    );
 
     expect(plainA).to.a('object').keys('_', 'id', 'a', 'b');
     expect(plainA.b).to.a('object').keys('_', 'id', 'a');
@@ -69,7 +71,9 @@ describe('AdditionalData', (): void => {
       additionalDataC
     );
 
-    const plainA = reconstituteData(a.toPlainObject(additionalDataRegistry));
+    const plainA = reconstituteData(
+      a.toPlainObject((object) => object, additionalDataRegistry)
+    );
 
     expect(plainA).to.a('object').keys('_', 'id', 'a', 'b');
     expect(plainA.b).to.a('object').keys('_', 'id', 'a', 'b');
@@ -87,7 +91,9 @@ describe('AdditionalData', (): void => {
 
     additionalDataRegistry.register(additionalDataC);
 
-    const plainD = reconstituteData(d.toPlainObject(additionalDataRegistry));
+    const plainD = reconstituteData(
+      d.toPlainObject((object) => object, additionalDataRegistry)
+    );
 
     expect(plainD).to.a('object').keys('_', 'id', 'a');
     expect(plainD._).to.equal('D');

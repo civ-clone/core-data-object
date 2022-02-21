@@ -91,6 +91,28 @@ class F extends DataObject {
   }
 }
 
+class G extends DataObject {
+  #a: A[];
+  #b: B;
+
+  constructor(b: B, ...a: A[]) {
+    super();
+
+    this.#a = a;
+    this.#b = b;
+
+    this.addKey('a', 'b');
+  }
+
+  a(): A[] {
+    return this.#a;
+  }
+
+  b(): B {
+    return this.#b;
+  }
+}
+
 class ARegistry extends EntityRegistry<A> {
   constructor() {
     super(A);
@@ -170,6 +192,26 @@ describe('DataObject', (): void => {
     expect(plainF.a.d._).to.equal('D');
     expect(plainF.a.e).to.a('object').keys('a');
     expect(plainF.a.e.a).to.a('object').keys('_', 'id', 'a', 'c');
+  });
+
+  it('should correctly apply the filter', (): void => {
+    const g = new G(new B(new A()), new A(), new A()),
+      plain = reconstituteData(g.toPlainObject());
+
+    expect(plain.b.a._).equal('A');
+
+    const plainFiltered = reconstituteData(
+      g.toPlainObject((object) => {
+        if (object instanceof A) {
+          return new E();
+        }
+
+        return object;
+      })
+    );
+
+    expect(plainFiltered.b.a._).equal('E');
+    expect(plainFiltered.a[0]._).equal('E');
   });
 
   class World extends DataObject {
@@ -259,7 +301,10 @@ describe('DataObject', (): void => {
 
     cityRegistry.register(city1, city2);
 
-    const plainWorld = world.toPlainObject(additionalDataRegistry);
+    const plainWorld = world.toPlainObject(
+      (object) => object,
+      additionalDataRegistry
+    );
 
     expect(Object.keys(plainWorld.objects).length).equal(12);
 

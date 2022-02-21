@@ -6,6 +6,8 @@ import AdditionalData from './AdditionalData';
 import EntityRegistry from '@civ-clone/core-registry/EntityRegistry';
 import { IConstructor } from '@civ-clone/core-registry/Registry';
 
+export type DataObjectFilter = (object: DataObject) => any;
+
 export type PlainObject = {
   [key: string]: any;
 };
@@ -39,14 +41,11 @@ const idCache: { [key: string]: number | bigint } = {},
     }
 
     return className + '-' + (++idCache[className]).toString(36);
-  };
-
-export class DataObject implements IDataObject {
-  #id: string;
-  #keys: (keyof this)[] = ['id'];
-  #toPlainObject = (
+  },
+  toPlainObject = (
     value: any,
     objects: ObjectStore,
+    filter: (object: DataObject) => DataObject = (object) => object,
     additionalDataRegistry: AdditionalDataRegistry = additionalDataRegistryInstance
   ): PlainObject | PlainObject[] => {
     if (value instanceof EntityRegistry) {
@@ -56,12 +55,14 @@ export class DataObject implements IDataObject {
     if (Array.isArray(value)) {
       return value.map(
         (item: any): PlainObject =>
-          this.#toPlainObject(item, objects, additionalDataRegistry)
+          toPlainObject(item, objects, filter, additionalDataRegistry)
       );
     }
 
     if (value instanceof DataObject) {
       const id = value.id();
+
+      value = filter(value);
 
       if (!(id in objects)) {
         const plainObject: PlainObject = {
@@ -70,15 +71,16 @@ export class DataObject implements IDataObject {
 
         objects[id] = plainObject;
 
-        value.keys().forEach((key): void => {
+        value.keys().forEach((key: string): void => {
           const keyValue: any =
             value[key] instanceof Function
               ? (value[key] as unknown as Function)()
               : value[key];
 
-          plainObject[key] = this.#toPlainObject(
+          plainObject[key] = toPlainObject(
             keyValue,
             objects,
+            filter,
             additionalDataRegistry
           );
         });
@@ -86,9 +88,10 @@ export class DataObject implements IDataObject {
         additionalDataRegistry
           .getByType(<IConstructor>value.constructor)
           .forEach((additionalData: AdditionalData): void => {
-            plainObject[additionalData.key()] = this.#toPlainObject(
+            plainObject[additionalData.key()] = toPlainObject(
               additionalData.data(value),
               objects,
+              filter,
               additionalDataRegistry
             );
           });
@@ -108,9 +111,10 @@ export class DataObject implements IDataObject {
     if (value && value instanceof Object) {
       return Object.entries(value).reduce(
         (object: PlainObject, [key, value]) => {
-          object[key] = this.#toPlainObject(
+          object[key] = toPlainObject(
             value,
             objects,
+            filter,
             additionalDataRegistry
           );
 
@@ -122,6 +126,10 @@ export class DataObject implements IDataObject {
 
     return value;
   };
+
+export class DataObject implements IDataObject {
+  #id: string;
+  #keys: (keyof this)[] = ['id'];
 
   constructor() {
     this.#id = idProvider(this);
@@ -140,12 +148,18 @@ export class DataObject implements IDataObject {
   }
 
   toPlainObject(
+    dataObjectFilter: DataObjectFilter = (object) => object,
     additionalDataRegistry: AdditionalDataRegistry = additionalDataRegistryInstance
   ): ObjectMap {
     const objects = {};
 
     return {
-      hierarchy: this.#toPlainObject(this, objects, additionalDataRegistry),
+      hierarchy: toPlainObject(
+        this,
+        objects,
+        dataObjectFilter,
+        additionalDataRegistry
+      ),
       objects,
     };
   }
