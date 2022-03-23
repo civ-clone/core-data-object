@@ -25,6 +25,7 @@ const idCache = {}, idProvider = (object) => {
     }
     return className + '-' + (++idCache[className]).toString(36);
 }, toPlainObject = (value, objects, filter = (object) => object, additionalDataRegistry = AdditionalDataRegistry_1.instance) => {
+    value = filter(value);
     if (value instanceof EntityRegistry_1.default) {
         value = value.entries();
     }
@@ -33,7 +34,6 @@ const idCache = {}, idProvider = (object) => {
     }
     if (value instanceof DataObject) {
         const id = value.id();
-        value = filter(value);
         if (!(id in objects)) {
             const plainObject = {
                 _: value.constructor.name,

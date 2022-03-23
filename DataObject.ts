@@ -45,9 +45,11 @@ const idCache: { [key: string]: number | bigint } = {},
   toPlainObject = (
     value: any,
     objects: ObjectStore,
-    filter: (object: DataObject) => DataObject = (object) => object,
+    filter: (object: any) => any = (object) => object,
     additionalDataRegistry: AdditionalDataRegistry = additionalDataRegistryInstance
   ): PlainObject | PlainObject[] => {
+    value = filter(value);
+
     if (value instanceof EntityRegistry) {
       value = value.entries();
     }
@@ -61,8 +63,6 @@ const idCache: { [key: string]: number | bigint } = {},
 
     if (value instanceof DataObject) {
       const id = value.id();
-
-      value = filter(value);
 
       if (!(id in objects)) {
         const plainObject: PlainObject = {
