@@ -9,7 +9,7 @@ import { IConstructor } from '@civ-clone/core-registry/Registry';
 export type DataObjectFilter = (object: DataObject) => any;
 
 export type PlainObject = {
-  [key: string]: any;
+  [key: string | symbol | number]: any;
 };
 
 export type ObjectStore = {
@@ -24,12 +24,13 @@ export type ObjectMap = {
 export interface IDataObject {
   addKey(...keys: (keyof this)[]): void;
   keys(): (keyof this)[];
+  sourceClass(): IConstructor<this>;
   toPlainObject(): PlainObject;
 }
 
 const idCache: { [key: string]: number | bigint } = {},
   idProvider = (object: DataObject) => {
-    const className = object.constructor.name,
+    const className = object.sourceClass().name,
       current = idCache[className];
 
     if (!current) {
@@ -66,7 +67,7 @@ const idCache: { [key: string]: number | bigint } = {},
 
       if (!(id in objects)) {
         const plainObject: PlainObject = {
-          _: value.constructor.name,
+          _: value.sourceClass().name,
         };
 
         objects[id] = plainObject;
@@ -86,7 +87,7 @@ const idCache: { [key: string]: number | bigint } = {},
         });
 
         additionalDataRegistry
-          .getByType(<IConstructor>value.constructor)
+          .getByType(value.sourceClass())
           .forEach((additionalData: AdditionalData): void => {
             plainObject[additionalData.key()] = toPlainObject(
               additionalData.data(value),
@@ -145,6 +146,10 @@ export class DataObject implements IDataObject {
 
   keys(): (keyof this)[] {
     return this.#keys;
+  }
+
+  sourceClass(): IConstructor<this> {
+    return this.constructor as IConstructor<this>;
   }
 
   toPlainObject(

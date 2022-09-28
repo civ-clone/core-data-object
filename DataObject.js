@@ -16,7 +16,7 @@ exports.DataObject = void 0;
 const AdditionalDataRegistry_1 = require("./AdditionalDataRegistry");
 const EntityRegistry_1 = require("@civ-clone/core-registry/EntityRegistry");
 const idCache = {}, idProvider = (object) => {
-    const className = object.constructor.name, current = idCache[className];
+    const className = object.sourceClass().name, current = idCache[className];
     if (!current) {
         idCache[className] = 0;
     }
@@ -36,7 +36,7 @@ const idCache = {}, idProvider = (object) => {
         const id = value.id();
         if (!(id in objects)) {
             const plainObject = {
-                _: value.constructor.name,
+                _: value.sourceClass().name,
             };
             objects[id] = plainObject;
             value.keys().forEach((key) => {
@@ -46,7 +46,7 @@ const idCache = {}, idProvider = (object) => {
                 plainObject[key] = toPlainObject(keyValue, objects, filter, additionalDataRegistry);
             });
             additionalDataRegistry
-                .getByType(value.constructor)
+                .getByType(value.sourceClass())
                 .forEach((additionalData) => {
                 plainObject[additionalData.key()] = toPlainObject(additionalData.data(value), objects, filter, additionalDataRegistry);
             });
@@ -82,6 +82,9 @@ class DataObject {
     }
     keys() {
         return __classPrivateFieldGet(this, _DataObject_keys, "f");
+    }
+    sourceClass() {
+        return this.constructor;
     }
     toPlainObject(dataObjectFilter = (object) => object, additionalDataRegistry = AdditionalDataRegistry_1.instance) {
         const objects = {};

@@ -4,6 +4,7 @@ import DataObject from '../DataObject';
 import EntityRegistry from '@civ-clone/core-registry/EntityRegistry';
 import { expect } from 'chai';
 import reconstituteData from '../lib/reconstituteData';
+import { IConstructor } from '@civ-clone/core-registry/Registry';
 
 class A extends DataObject {
   a: string = 'a';
@@ -321,5 +322,19 @@ describe('DataObject', (): void => {
     expect(reconstitutedWorld.tiles[3].units[0]).equal(
       reconstitutedWorld.tiles[3].units[0].tile.units[0].tile.units[0]
     );
+  });
+
+  it('should provide expected classes for `sourceClass()`', (): void => {
+    class A extends DataObject {}
+    class B extends A {}
+    class C extends B {}
+
+    const a = new A(),
+      b = new B(),
+      c = new C();
+
+    expect(a.sourceClass()).equal(A);
+    expect(b.sourceClass()).equal(B);
+    expect(c.sourceClass()).equal(C);
   });
 });

@@ -1,6 +1,6 @@
 {
   "name": "@civ-clone/core-data-object",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "repository": "git@github.com:civ-clone/core-data-object.git",
   "keywords": [
     "typescript",
@@ -20,7 +20,7 @@
   "devDependencies": {
     "@types/chai": "^4.0.0",
     "@types/mocha": "^8.0.0",
-    "@types/node": "^14.0.0",
+    "@types/node": "^16.0.0",
     "c8": "^7.0.0",
     "chai": "^4.0.0",
     "chai-spies": "^1.0.0",
