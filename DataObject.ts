@@ -148,8 +148,8 @@ export class DataObject implements IDataObject {
     return this.#keys;
   }
 
-  sourceClass(): IConstructor<this> {
-    return this.constructor as IConstructor<this>;
+  sourceClass<T extends NewableFunction>(): T {
+    return this.constructor as T;
   }
 
   toPlainObject(

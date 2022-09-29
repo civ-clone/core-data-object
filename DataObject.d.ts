@@ -23,7 +23,7 @@ export declare class DataObject implements IDataObject {
   addKey(...keys: (keyof this)[]): void;
   id(): string;
   keys(): (keyof this)[];
-  sourceClass(): IConstructor<this>;
+  sourceClass<T extends NewableFunction>(): T;
   toPlainObject(
     dataObjectFilter?: DataObjectFilter,
     additionalDataRegistry?: AdditionalDataRegistry
