@@ -23,6 +23,7 @@ export type ObjectMap = {
 
 export interface IDataObject {
   addKey(...keys: (keyof this)[]): void;
+  id(): string;
   keys(): (keyof this)[];
   sourceClass(): IConstructor<this>;
   toPlainObject(): PlainObject;
