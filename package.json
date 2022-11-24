@@ -1,6 +1,6 @@
 {
   "name": "@civ-clone/core-data-object",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "repository": "git@github.com:civ-clone/core-data-object.git",
   "keywords": [
     "typescript",

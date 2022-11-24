@@ -22,9 +22,9 @@ export type ObjectMap = {
 };
 
 export interface IDataObject {
-  addKey(...keys: (keyof this)[]): void;
+  addKey(...keys: (string | number | symbol)[]): void;
   id(): string;
-  keys(): (keyof this)[];
+  keys(): (string | number | symbol)[];
   sourceClass(): IConstructor<this>;
   toPlainObject(): PlainObject;
 }
