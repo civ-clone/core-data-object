@@ -1,13 +1,13 @@
 import { AdditionalDataRegistry } from './AdditionalDataRegistry';
 import { IConstructor } from '@civ-clone/core-registry/Registry';
-export declare type DataObjectFilter = (object: DataObject) => any;
-export declare type PlainObject = {
+export type DataObjectFilter = (object: DataObject) => any;
+export type PlainObject = {
   [key: string | symbol | number]: any;
 };
-export declare type ObjectStore = {
+export type ObjectStore = {
   [key: string]: PlainObject;
 };
-export declare type ObjectMap = {
+export type ObjectMap = {
   hierarchy: PlainObject;
   objects: ObjectStore;
 };

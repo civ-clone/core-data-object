@@ -15,12 +15,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.DataObject = void 0;
 const AdditionalDataRegistry_1 = require("./AdditionalDataRegistry");
 const EntityRegistry_1 = require("@civ-clone/core-registry/EntityRegistry");
+const generateInheritance_1 = require("./lib/generateInheritance");
 const idCache = {}, idProvider = (object) => {
     const className = object.sourceClass().name, current = idCache[className];
     if (!current) {
         idCache[className] = 0;
     }
-    if (current === Number.MAX_SAFE_INTEGER) {
+    if (current >= Number.MAX_SAFE_INTEGER) {
         idCache[className] = BigInt(current);
     }
     return className + '-' + (++idCache[className]).toString(36);
@@ -37,6 +38,7 @@ const idCache = {}, idProvider = (object) => {
         if (!(id in objects)) {
             const plainObject = {
                 _: value.sourceClass().name,
+                __: (0, generateInheritance_1.default)(value),
             };
             objects[id] = plainObject;
             value.keys().forEach((key) => {
@@ -58,6 +60,7 @@ const idCache = {}, idProvider = (object) => {
     if (value instanceof Function) {
         return {
             _: value.name,
+            __: (0, generateInheritance_1.default)(value),
         };
     }
     if (value && value instanceof Object) {

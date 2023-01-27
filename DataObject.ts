@@ -5,6 +5,7 @@ import {
 import AdditionalData from './AdditionalData';
 import EntityRegistry from '@civ-clone/core-registry/EntityRegistry';
 import { IConstructor } from '@civ-clone/core-registry/Registry';
+import generateInheritance from './lib/generateInheritance';
 
 export type DataObjectFilter = (object: DataObject) => any;
 
@@ -38,7 +39,7 @@ const idCache: { [key: string]: number | bigint } = {},
       idCache[className] = 0;
     }
 
-    if (current === Number.MAX_SAFE_INTEGER) {
+    if (current >= Number.MAX_SAFE_INTEGER) {
       idCache[className] = BigInt(current);
     }
 
@@ -69,6 +70,7 @@ const idCache: { [key: string]: number | bigint } = {},
       if (!(id in objects)) {
         const plainObject: PlainObject = {
           _: value.sourceClass().name,
+          __: generateInheritance(value),
         };
 
         objects[id] = plainObject;
@@ -107,6 +109,7 @@ const idCache: { [key: string]: number | bigint } = {},
     if (value instanceof Function) {
       return {
         _: value.name,
+        __: generateInheritance(value),
       };
     }
 

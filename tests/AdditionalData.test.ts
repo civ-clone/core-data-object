@@ -52,8 +52,8 @@ describe('AdditionalData', (): void => {
       a.toPlainObject((object) => object, additionalDataRegistry)
     );
 
-    expect(plainA).to.a('object').keys('_', 'id', 'a', 'b');
-    expect(plainA.b).to.a('object').keys('_', 'id', 'a');
+    expect(plainA).to.a('object').keys('_', '__', 'id', 'a', 'b');
+    expect(plainA.b).to.a('object').keys('_', '__', 'id', 'a');
     expect(plainA.b._).to.equal('B');
     expect(plainA.b.a).to.equal('a');
   });
@@ -75,11 +75,11 @@ describe('AdditionalData', (): void => {
       a.toPlainObject((object) => object, additionalDataRegistry)
     );
 
-    expect(plainA).to.a('object').keys('_', 'id', 'a', 'b');
-    expect(plainA.b).to.a('object').keys('_', 'id', 'a', 'b');
+    expect(plainA).to.a('object').keys('_', '__', 'id', 'a', 'b');
+    expect(plainA.b).to.a('object').keys('_', '__', 'id', 'a', 'b');
     expect(plainA.b._).to.equal('B');
     expect(plainA.b.a).to.equal('a');
-    expect(plainA.b.b).to.a('object').keys('_', 'id', 'a');
+    expect(plainA.b.b).to.a('object').keys('_', '__', 'id', 'a');
     expect(plainA.b.b._).to.equal('C');
     expect(plainA.b.b.a).to.equal('static a');
   });
@@ -95,7 +95,7 @@ describe('AdditionalData', (): void => {
       d.toPlainObject((object) => object, additionalDataRegistry)
     );
 
-    expect(plainD).to.a('object').keys('_', 'id', 'a');
+    expect(plainD).to.a('object').keys('_', '__', 'id', 'a');
     expect(plainD._).to.equal('D');
     expect(plainD.a).to.equal('a');
   });

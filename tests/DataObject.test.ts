@@ -125,7 +125,7 @@ describe('DataObject', (): void => {
     const a = new A(),
       plainA = reconstituteData(a.toPlainObject());
 
-    expect(plainA).to.a('object').keys('_', 'id', 'a', 'c');
+    expect(plainA).to.a('object').keys('_', '__', 'id', 'a', 'c');
     expect(plainA._).to.equal('A');
     expect(plainA.a).to.equal('a');
     expect(plainA.c).to.equal('c');
@@ -135,11 +135,11 @@ describe('DataObject', (): void => {
     const b = new B(new A(), new A(), new A()),
       plainB = reconstituteData(b.toPlainObject());
 
-    expect(plainB).to.a('object').keys('_', 'id', 'a', 'b');
-    expect(plainB.a).to.a('object').keys('_', 'id', 'a', 'c');
+    expect(plainB).to.a('object').keys('_', '__', 'id', 'a', 'b');
+    expect(plainB.a).to.a('object').keys('_', '__', 'id', 'a', 'c');
     expect(plainB.b).to.a('array').lengthOf(2);
-    expect(plainB.b[0]).to.a('object').keys('_', 'id', 'a', 'c');
-    expect(plainB.b[1]).to.a('object').keys('_', 'id', 'a', 'c');
+    expect(plainB.b[0]).to.a('object').keys('_', '__', 'id', 'a', 'c');
+    expect(plainB.b[1]).to.a('object').keys('_', '__', 'id', 'a', 'c');
   });
 
   it('should return entries from Registries', (): void => {
@@ -147,7 +147,7 @@ describe('DataObject', (): void => {
       c = new C(aRegistry),
       plainC = reconstituteData(c.toPlainObject());
 
-    expect(plainC).to.a('object').keys('_', 'id', 'a');
+    expect(plainC).to.a('object').keys('_', '__', 'id', 'a');
     expect(plainC.a).to.a('array').lengthOf(0);
 
     aRegistry.register(new A(), new A(), new A());
@@ -158,25 +158,25 @@ describe('DataObject', (): void => {
     const updatedPlainC = reconstituteData(c.toPlainObject());
 
     expect(updatedPlainC.a).to.a('array').lengthOf(3);
-    expect(updatedPlainC.a[0]).to.a('object').keys('_', 'id', 'a', 'c');
-    expect(updatedPlainC.a[1]).to.a('object').keys('_', 'id', 'a', 'c');
-    expect(updatedPlainC.a[2]).to.a('object').keys('_', 'id', 'a', 'c');
+    expect(updatedPlainC.a[0]).to.a('object').keys('_', '__', 'id', 'a', 'c');
+    expect(updatedPlainC.a[1]).to.a('object').keys('_', '__', 'id', 'a', 'c');
+    expect(updatedPlainC.a[2]).to.a('object').keys('_', '__', 'id', 'a', 'c');
   });
 
   it('should return values from getters', (): void => {
     const d = new D(new A()),
       plainD = reconstituteData(d.toPlainObject());
 
-    expect(plainD).to.a('object').keys('_', 'id', 'a');
-    expect(plainD.a).to.a('object').keys('_', 'id', 'a', 'c');
+    expect(plainD).to.a('object').keys('_', '__', 'id', 'a');
+    expect(plainD.a).to.a('object').keys('_', '__', 'id', 'a', 'c');
   });
 
   it('should return function name only from raw functions', (): void => {
     const e = new E(),
       plainE = reconstituteData(e.toPlainObject());
 
-    expect(plainE).to.a('object').keys('_', 'id', 'a');
-    expect(plainE.a).to.a('object').keys('_');
+    expect(plainE).to.a('object').keys('_', '__', 'id', 'a');
+    expect(plainE.a).to.a('object').keys('_', '__');
     expect(plainE.a._).to.equal('A');
   });
 
@@ -184,15 +184,15 @@ describe('DataObject', (): void => {
     const f = new F(),
       plainF = reconstituteData(f.toPlainObject());
 
-    expect(plainF).to.a('object').keys('_', 'id', 'a');
+    expect(plainF).to.a('object').keys('_', '__', 'id', 'a');
     expect(plainF.a).to.a('object').keys('a', 'b', 'c', 'd', 'e');
     expect(plainF.a.a).to.true;
     expect(plainF.a.b).to.equal(2);
     expect(plainF.a.c).to.equal('C');
-    expect(plainF.a.d).to.a('object').keys('_');
+    expect(plainF.a.d).to.a('object').keys('_', '__');
     expect(plainF.a.d._).to.equal('D');
     expect(plainF.a.e).to.a('object').keys('a');
-    expect(plainF.a.e.a).to.a('object').keys('_', 'id', 'a', 'c');
+    expect(plainF.a.e.a).to.a('object').keys('_', '__', 'id', 'a', 'c');
   });
 
   it('should correctly apply the filter', (): void => {
@@ -311,11 +311,11 @@ describe('DataObject', (): void => {
 
     const reconstitutedWorld = reconstituteData(plainWorld);
 
-    expect(reconstitutedWorld).an('object').keys('_', 'id', 'tiles');
+    expect(reconstitutedWorld).an('object').keys('_', '__', 'id', 'tiles');
     expect(reconstitutedWorld.tiles).an('array').length(5);
     expect(reconstitutedWorld.tiles[3])
       .an('object')
-      .keys('_', 'id', 'units', 'city');
+      .keys('_', '__', 'id', 'units', 'city');
     expect(reconstitutedWorld.tiles[3]).equal(
       reconstitutedWorld.tiles[3].units[0].tile
     );
@@ -336,5 +336,11 @@ describe('DataObject', (): void => {
     expect(a.sourceClass()).equal(A);
     expect(b.sourceClass()).equal(B);
     expect(c.sourceClass()).equal(C);
+    expect(reconstituteData(c.toPlainObject()).__).eql([
+      'C',
+      'B',
+      'A',
+      'DataObject',
+    ]);
   });
 });
