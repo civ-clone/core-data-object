@@ -17,7 +17,7 @@ const AdditionalDataRegistry_1 = require("./AdditionalDataRegistry");
 const EntityRegistry_1 = require("@civ-clone/core-registry/EntityRegistry");
 const generateInheritance_1 = require("./lib/generateInheritance");
 const idCache = {}, idProvider = (object) => {
-    const className = object.sourceClass().name, current = idCache[className];
+    const className = object.className(), current = idCache[className];
     if (!current) {
         idCache[className] = 0;
     }
@@ -37,8 +37,8 @@ const idCache = {}, idProvider = (object) => {
         const id = value.id();
         if (!(id in objects)) {
             const plainObject = {
-                _: value.sourceClass().name,
-                __: (0, generateInheritance_1.default)(value),
+                _: value.className(),
+                __: value.hierarchy(),
             };
             objects[id] = plainObject;
             value.keys().forEach((key) => {
@@ -79,6 +79,12 @@ class DataObject {
     }
     addKey(...keys) {
         __classPrivateFieldGet(this, _DataObject_keys, "f").push(...keys);
+    }
+    className() {
+        return this.sourceClass().name;
+    }
+    hierarchy() {
+        return (0, generateInheritance_1.default)(this);
     }
     id() {
         return __classPrivateFieldGet(this, _DataObject_id, "f");
