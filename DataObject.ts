@@ -133,23 +133,23 @@ const idCache: { [key: string]: number | bigint } = {},
   };
 
 export class DataObject implements IDataObject {
-  #id: string;
-  #keys: (keyof this)[] = ['id'];
+  private _id: string;
+  private _keys: (keyof this)[] = ['id'];
 
   constructor() {
-    this.#id = idProvider(this);
+    this._id = idProvider(this);
   }
 
   addKey(...keys: (keyof this)[]): void {
-    this.#keys.push(...keys);
+    this._keys.push(...keys);
   }
 
   id(): string {
-    return this.#id;
+    return this._id;
   }
 
   keys(): (keyof this)[] {
-    return this.#keys;
+    return this._keys;
   }
 
   sourceClass<T extends NewableFunction>(): T {

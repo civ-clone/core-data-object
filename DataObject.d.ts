@@ -19,7 +19,8 @@ export interface IDataObject {
   toPlainObject(): PlainObject;
 }
 export declare class DataObject implements IDataObject {
-  #private;
+  private _id;
+  private _keys;
   constructor();
   addKey(...keys: (keyof this)[]): void;
   id(): string;

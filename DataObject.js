@@ -1,16 +1,4 @@
 "use strict";
-var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
-    if (kind === "m") throw new TypeError("Private method is not writable");
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
-    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
-};
-var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, state, kind, f) {
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
-    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
-};
-var _DataObject_id, _DataObject_keys;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DataObject = void 0;
 const AdditionalDataRegistry_1 = require("./AdditionalDataRegistry");
@@ -73,18 +61,17 @@ const idCache = {}, idProvider = (object) => {
 };
 class DataObject {
     constructor() {
-        _DataObject_id.set(this, void 0);
-        _DataObject_keys.set(this, ['id']);
-        __classPrivateFieldSet(this, _DataObject_id, idProvider(this), "f");
+        this._keys = ['id'];
+        this._id = idProvider(this);
     }
     addKey(...keys) {
-        __classPrivateFieldGet(this, _DataObject_keys, "f").push(...keys);
+        this._keys.push(...keys);
     }
     id() {
-        return __classPrivateFieldGet(this, _DataObject_id, "f");
+        return this._id;
     }
     keys() {
-        return __classPrivateFieldGet(this, _DataObject_keys, "f");
+        return this._keys;
     }
     sourceClass() {
         return this.constructor;
@@ -98,6 +85,5 @@ class DataObject {
     }
 }
 exports.DataObject = DataObject;
-_DataObject_id = new WeakMap(), _DataObject_keys = new WeakMap();
 exports.default = DataObject;
 //# sourceMappingURL=DataObject.js.map

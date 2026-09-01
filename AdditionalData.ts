@@ -7,30 +7,30 @@ export interface IAdditionalData {
 }
 
 export class AdditionalData implements IAdditionalData {
-  #key: string;
-  #provider: (...args: any[]) => any;
-  #type: IConstructor;
+  private _key: string;
+  private _provider: (...args: any[]) => any;
+  private _type: IConstructor;
 
   constructor(
     type: IConstructor,
     key: string,
     provider: (...args: any[]) => any
   ) {
-    this.#key = key;
-    this.#provider = provider;
-    this.#type = type;
+    this._key = key;
+    this._provider = provider;
+    this._type = type;
   }
 
   data(...args: any[]): any {
-    return this.#provider(...args);
+    return this._provider(...args);
   }
 
   key(): string {
-    return this.#key;
+    return this._key;
   }
 
   type(): IConstructor {
-    return this.#type;
+    return this._type;
   }
 }
 

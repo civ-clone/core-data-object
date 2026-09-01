@@ -5,7 +5,9 @@ export interface IAdditionalData {
   type(): IConstructor;
 }
 export declare class AdditionalData implements IAdditionalData {
-  #private;
+  private _key;
+  private _provider;
+  private _type;
   constructor(
     type: IConstructor,
     key: string,
