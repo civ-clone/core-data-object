@@ -22,6 +22,28 @@ export type ObjectMap = {
   objects: ObjectStore;
 };
 
+/**
+ * `IConstructor<T>` must stay assignable to `typeof T`.
+ *
+ * `ConstructorRegistry<T>` hands out `IConstructor<T>`, and the codebase
+ * annotates the classes it gets back as `typeof X` —
+ * `core-science/PlayerResearch.available()` and
+ * `core-government/PlayerGovernment.available()` both do. `IConstructor` is
+ * `new (...args: any[]) => T` and carries no statics, so it satisfies
+ * `typeof X` only while `X` declares no *required* static.
+ *
+ * 0.1.14 declared `static readonly transient: readonly string[]` and broke
+ * that, which is why it is optional. Nothing failed in this package — its own
+ * tests pass either way — and 22 of the 83 checkouts stopped typechecking,
+ * from those two call sites. Hence a compile-time assertion rather than a test:
+ * the damage was never visible from in here.
+ */
+type Assert<T extends true> = T;
+
+type ConstructorStaysAssignable = Assert<
+  IConstructor<DataObject> extends typeof DataObject ? true : false
+>;
+
 export interface IDataObject {
   addKey(...keys: (string | number | symbol)[]): void;
   allTransient(): readonly string[];
@@ -152,7 +174,7 @@ export class DataObject implements IDataObject {
    * Caches belong here too, for a different reason: they are derived, so
    * restoring them would restore a stale answer.
    */
-  static readonly transient: readonly string[] = ['_id', '_keys'];
+  static readonly transient?: readonly string[] = ['_id', '_keys'];
 
   private _id: string;
   private _keys: (keyof this)[] = ['id'];

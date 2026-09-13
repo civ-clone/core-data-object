@@ -38,7 +38,7 @@ export declare class DataObject implements IDataObject {
    * Caches belong here too, for a different reason: they are derived, so
    * restoring them would restore a stale answer.
    */
-  static readonly transient: readonly string[];
+  static readonly transient?: readonly string[];
   private _id;
   private _keys;
   constructor();
