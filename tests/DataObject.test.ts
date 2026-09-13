@@ -344,3 +344,56 @@ describe('DataObject', (): void => {
     ]);
   });
 });
+
+describe('DataObject transient fields', (): void => {
+  class Base extends DataObject {
+    static readonly transient = ['_cache'];
+
+    private _saved: number = 1;
+    private _cache: number | null = null;
+
+    constructor() {
+      super();
+
+      this._cache = 2;
+    }
+  }
+
+  class Derived extends Base {
+    static readonly transient = ['_registry'];
+
+    private _registry: object = {};
+    private _alsoSaved: string = 'x';
+  }
+
+  it('should include the names a class declares', (): void => {
+    expect(new Base().allTransient()).to.include('_cache');
+  });
+
+  it('should inherit the names its ancestors declare', (): void => {
+    // `static` members are inherited, so a subclass declaring its own
+    // `transient` replaces the parent's. If `allTransient` did not walk the
+    // chain, `Derived` would silently start saving `_cache`, `_id` and `_keys`.
+    const names = new Derived().allTransient();
+
+    expect(names).to.include('_registry');
+    expect(names).to.include('_cache');
+    expect(names).to.include('_id');
+    expect(names).to.include('_keys');
+  });
+
+  it('should report the fields that would be saved', (): void => {
+    expect(new Derived().stateKeys()).to.deep.equal(['_alsoSaved', '_saved']);
+  });
+
+  it('should exclude a `DataObject`s own bookkeeping by default', (): void => {
+    expect(new DataObject().stateKeys()).to.deep.equal([]);
+  });
+
+  it('should have something to enumerate at all', (): void => {
+    // The point of the `#private` → `private` migration: with hash-private
+    // fields `Object.keys` returned nothing and no generic serialiser was
+    // possible.
+    expect(Object.keys(new Derived()).length).to.be.greaterThan(0);
+  });
+});

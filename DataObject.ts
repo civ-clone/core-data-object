@@ -24,7 +24,9 @@ export type ObjectMap = {
 
 export interface IDataObject {
   addKey(...keys: (string | number | symbol)[]): void;
+  allTransient(): readonly string[];
   id(): string;
+  stateKeys(): string[];
   keys(): (string | number | symbol)[];
   sourceClass(): IConstructor<this>;
   toPlainObject(): PlainObject;
@@ -133,6 +135,25 @@ const idCache: { [key: string]: number | bigint } = {},
   };
 
 export class DataObject implements IDataObject {
+  /**
+   * Field names this class does not want saved.
+   *
+   * **Opt-out, not opt-in.** A field added later is saved by default, so
+   * forgetting to declare it wastes bytes; the reverse would lose data
+   * silently, and a save format that quietly drops a new field is worse than
+   * one that carries a few it did not need.
+   *
+   * What belongs here is anything the loading game supplies rather than the
+   * file: registries, the engine, the generator. Since every constructor in
+   * the engine already takes those as parameters, and a `Game` holds them, a
+   * transient field is not a hole in the save — it is a field with a different
+   * source.
+   *
+   * Caches belong here too, for a different reason: they are derived, so
+   * restoring them would restore a stale answer.
+   */
+  static readonly transient: readonly string[] = ['_id', '_keys'];
+
   private _id: string;
   private _keys: (keyof this)[] = ['id'];
 
@@ -154,6 +175,48 @@ export class DataObject implements IDataObject {
 
   sourceClass<T extends NewableFunction>(): T {
     return this.constructor as T;
+  }
+
+  /**
+   * Every transient name for this class, including those its ancestors declare.
+   *
+   * `static` members are inherited, so a subclass declaring its own `transient`
+   * *replaces* the parent's rather than adding to it — which would silently
+   * start saving `_id` and `_keys` again. Walking the prototype chain is what
+   * makes the declarations additive.
+   */
+  allTransient(): readonly string[] {
+    const names = new Set<string>();
+
+    let current: unknown = this.constructor;
+
+    while (typeof current === 'function' && current !== Function.prototype) {
+      const declared = (current as { transient?: readonly string[] }).transient;
+
+      if (Array.isArray(declared)) {
+        declared.forEach((name) => names.add(name));
+      }
+
+      current = Object.getPrototypeOf(current);
+    }
+
+    return [...names].sort();
+  }
+
+  /**
+   * The field names that *would* be saved: own enumerable properties, minus
+   * everything transient.
+   *
+   * This is the whole reason the `#private` → `private` migration happened.
+   * With `#private` fields there was nothing to enumerate, so no generic
+   * serialiser was possible at all.
+   */
+  stateKeys(): string[] {
+    const transient = new Set(this.allTransient());
+
+    return Object.keys(this)
+      .filter((name) => !transient.has(name))
+      .sort();
   }
 
   toPlainObject(
