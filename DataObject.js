@@ -1,11 +1,62 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DataObject = void 0;
+exports.DataObject = exports.restoreIdCounters = exports.idCounters = exports.typeNameOf = void 0;
 const AdditionalDataRegistry_1 = require("./AdditionalDataRegistry");
 const EntityRegistry_1 = require("@civ-clone/core-registry/EntityRegistry");
 const generateInheritance_1 = require("./lib/generateInheritance");
+/**
+ * `type` when a class declares one, its name otherwise.
+ *
+ * A free function rather than `static typeName()` on `DataObject`, and the
+ * reason is worth keeping: the static version was written first, and
+ * `ConstructorStaysAssignable` below rejected it on the spot. A required
+ * static — method or property — stops `IConstructor<T>` satisfying `typeof T`,
+ * which is precisely what 0.1.14 shipped and what broke 22 checkouts. The
+ * guard turned a second instance of that into a compile error in the same
+ * minute it was written.
+ */
+const typeNameOf = (Class) => 
+// `hasOwnProperty`, not `Class.type` — `static` members are inherited, so a
+// subclass of a tagged class reads its *parent's* tag. Every descendant of
+// one tagged class would then save and load as that parent: an entity type
+// quietly swallowing a hierarchy, and ids to match, since `idProvider` keys
+// on this. The same trap `allTransient()` walks the prototype chain to avoid.
+Object.prototype.hasOwnProperty.call(Class, 'type') && Class.type
+    ? Class.type
+    : Class.name;
+exports.typeNameOf = typeNameOf;
+/**
+ * The per-class id counters, for a save to carry.
+ *
+ * `DataObject` ids are `<type>-<counter in base 36>`, and the counter is module
+ * state. Without restoring it, the first entity created after a load takes an
+ * id that a loaded entity already holds — `City-1` twice, one of them
+ * unreachable through `getById`. Nothing throws; the second city simply wins
+ * some lookups and loses others.
+ *
+ * Returned as a copy, so a caller holding the result cannot move the engine's
+ * counters by mutating it.
+ */
+const idCounters = () => Object.fromEntries(Object.entries(idCache).map(([type, count]) => [type, Number(count)]));
+exports.idCounters = idCounters;
+/**
+ * Restore counters saved by `idCounters()`.
+ *
+ * Counters only ever move forward: `Math.max` against what is already there,
+ * because plugin imports create entities (terrain definitions, civilisations,
+ * leaders) *before* a save is loaded, and lowering a counter to the saved value
+ * would then hand out ids those definitions already took.
+ */
+const restoreIdCounters = (counters) => Object.entries(counters).forEach(([type, count]) => {
+    var _a;
+    idCache[type] = Math.max(Number((_a = idCache[type]) !== null && _a !== void 0 ? _a : 0), count);
+});
+exports.restoreIdCounters = restoreIdCounters;
 const idCache = {}, idProvider = (object) => {
-    const className = object.sourceClass().name, current = idCache[className];
+    // `typeName()` rather than `.name`, so ids follow an explicit `type` tag
+    // wherever one is declared. Identical today, because nothing declares one
+    // yet — which is what makes this change safe to land on its own.
+    const className = (0, exports.typeNameOf)(object.sourceClass()), current = idCache[className];
     if (!current) {
         idCache[className] = 0;
     }
