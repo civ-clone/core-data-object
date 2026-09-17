@@ -11,7 +11,19 @@ import { DataObject, typeNameOf } from './DataObject';
  * may still be handed.
  */
 export type SaveableClass = {
-  prototype: DataObject;
+  /**
+   * `object`, not `DataObject`, and that is a deliberate widening.
+   *
+   * `DataObject._keys` is typed `(keyof this)[]`, so a subclass that adds any
+   * public member is not assignable to the base — `Yield` adds `values()`, and
+   * `register(Gold)` from `base-city-yield-gold` failed with
+   * `'"values"' is not assignable to 'keyof DataObject'`. The constraint was
+   * tighter than the use: all this registry does is read `name` and `type`, and
+   * hand `prototype` to `Object.create` for the hydrator to fill.
+   *
+   * Widening, so every existing caller still compiles.
+   */
+  prototype: object;
   name: string;
   type?: string;
 };
