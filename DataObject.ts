@@ -340,4 +340,20 @@ export class DataObject implements IDataObject {
   }
 }
 
+/**
+ * A subclass that adds a member stays assignable to `DataObject`
+ * (civ-clone/web-renderer#21). `_keys` and `keys()` were once typed by `this`,
+ * which widens with every member a subclass adds, so no such subclass was
+ * assignable to its base. As with `ConstructorStaysAssignable`, it's a
+ * compile-time assertion: `npm test` doesn't type-check, and `ts:compile`
+ * leaves out the tests. `declare`, so nothing is emitted for it.
+ */
+declare class AddsAMember extends DataObject {
+  added(): void;
+}
+
+type SubclassStaysAssignable = Assert<
+  AddsAMember extends DataObject ? true : false
+>;
+
 export default DataObject;
