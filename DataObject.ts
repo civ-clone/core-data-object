@@ -254,22 +254,26 @@ export class DataObject implements IDataObject {
   static readonly transient?: readonly string[] = ['_id', '_keys'];
 
   private _id: string;
-  private _keys: (keyof this)[] = ['id'];
+  // `string[]`, not `(keyof this)[]`: `this` widens with each subclass's members, so a field typed by it made no
+  //  subclass assignable to its base (civ-clone/web-renderer#21). `addKey` still checks the names it's given.
+  private _keys: string[] = ['id'];
 
   constructor() {
     this._id = idProvider(this);
   }
 
   addKey(...keys: (keyof this)[]): void {
-    this._keys.push(...keys);
+    this._keys.push(...(keys as string[]));
   }
 
   id(): string {
     return this._id;
   }
 
-  keys(): (keyof this)[] {
-    return this._keys;
+  // Generic on `this` rather than typed by `this`, for the same reason as `_keys`: each caller still gets its own
+  //  class's names.
+  keys<T extends DataObject>(this: T): (keyof T)[] {
+    return (this as DataObject)._keys as (keyof T)[];
   }
 
   sourceClass<T extends NewableFunction>(): T {

@@ -396,4 +396,27 @@ describe('DataObject transient fields', (): void => {
     // possible.
     expect(Object.keys(new Derived()).length).to.be.greaterThan(0);
   });
+
+  it('should let a subclass with more members stand in for its base', (): void => {
+    // Mostly a compile-time check: before civ-clone/web-renderer#21, `_keys` and `keys()` were typed by `this`, so `D`
+    //  (which adds `d`) was not assignable to `A`, and `tsc` rejected these assignments. `npm test` doesn't type-check,
+    //  so it's `civ typecheck` and `tsc` over this file that would catch a regression.
+    class D extends A {
+      d: string = 'd';
+
+      constructor() {
+        super();
+
+        this.addKey('d');
+      }
+    }
+
+    const asBase: A = new D(),
+      many: A[] = [new A(), new D()],
+      keys: (keyof D)[] = new D().keys();
+
+    expect(asBase.keys()).to.eql(['id', 'a', 'c', 'd']);
+    expect(many.length).to.equal(2);
+    expect(keys).to.eql(['id', 'a', 'c', 'd']);
+  });
 });

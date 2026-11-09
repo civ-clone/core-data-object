@@ -12,14 +12,11 @@ export type SaveableClass = {
   /**
    * `object`, not `DataObject`, and that is a deliberate widening.
    *
-   * `DataObject._keys` is typed `(keyof this)[]`, so a subclass that adds any
-   * public member is not assignable to the base — `Yield` adds `values()`, and
-   * `register(Gold)` from `base-city-yield-gold` failed with
-   * `'"values"' is not assignable to 'keyof DataObject'`. The constraint was
-   * tighter than the use: all this registry does is read `name` and `type`, and
-   * hand `prototype` to `Object.create` for the hydrator to fill.
-   *
-   * Widening, so every existing caller still compiles.
+   * It was first made because `DataObject._keys` was typed `(keyof this)[]`,
+   * which made no subclass that added a public member assignable to its base
+   * (civ-clone/web-renderer#21, since fixed). It stays wide because that is all
+   * the use needs: this registry reads `name` and `type`, and hands `prototype`
+   * to `Object.create` for the hydrator to fill.
    */
   prototype: object;
   name: string;
