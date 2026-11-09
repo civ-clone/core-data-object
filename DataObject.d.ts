@@ -104,7 +104,7 @@ export declare class DataObject implements IDataObject {
   constructor();
   addKey(...keys: (keyof this)[]): void;
   id(): string;
-  keys(): (keyof this)[];
+  keys<T extends DataObject>(this: T): (keyof T)[];
   sourceClass<T extends NewableFunction>(): T;
   /**
    * Every transient name for this class, including those its ancestors declare.

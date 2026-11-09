@@ -112,6 +112,8 @@ const idCache = {}, idProvider = (object) => {
 };
 class DataObject {
     constructor() {
+        // `string[]`, not `(keyof this)[]`: `this` widens with each subclass's members, so a field typed by it made no
+        //  subclass assignable to its base (civ-clone/web-renderer#21). `addKey` still checks the names it's given.
         this._keys = ['id'];
         this._id = idProvider(this);
     }
@@ -121,6 +123,8 @@ class DataObject {
     id() {
         return this._id;
     }
+    // Generic on `this` rather than typed by `this`, for the same reason as `_keys`: each caller still gets its own
+    //  class's names.
     keys() {
         return this._keys;
     }
