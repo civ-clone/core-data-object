@@ -153,11 +153,12 @@ const idCache: { [key: string]: number | bigint } = {},
 
         objects[id] = plainObject;
 
+        // By name, as `keys()` gives them: TypeScript 5 types `value` as a DataObject here, which has no string index.
+        const members = value as unknown as Record<string, any>;
+
         value.keys().forEach((key: string): void => {
           const keyValue: any =
-            value[key] instanceof Function
-              ? (value[key] as unknown as Function)()
-              : value[key];
+            members[key] instanceof Function ? members[key]() : members[key];
 
           plainObject[key] = toPlainObject(
             keyValue,

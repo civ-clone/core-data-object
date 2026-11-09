@@ -80,10 +80,10 @@ const idCache = {}, idProvider = (object) => {
                 __: (0, generateInheritance_1.default)(value),
             };
             objects[id] = plainObject;
+            // By name, as `keys()` gives them: TypeScript 5 types `value` as a DataObject here, which has no string index.
+            const members = value;
             value.keys().forEach((key) => {
-                const keyValue = value[key] instanceof Function
-                    ? value[key]()
-                    : value[key];
+                const keyValue = members[key] instanceof Function ? members[key]() : members[key];
                 plainObject[key] = toPlainObject(keyValue, objects, filter, additionalDataRegistry);
             });
             additionalDataRegistry
